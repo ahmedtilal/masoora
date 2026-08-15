@@ -1,0 +1,42 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.1] - 2026-08-15
+
+Packaging-only release. There are no changes to library behaviour or the public
+API; upgrading from 0.1.0 is a no-op at runtime.
+
+### Added
+
+- This changelog, which is now shipped inside the source distribution.
+
+## [0.1.0] - 2026-08-15
+
+Initial release.
+
+### Added
+
+- `PipelineBuilder` — fluent construction via `.with_read_step()`,
+  `.with_transform_step()`, and `.with_write_step()`.
+- `PipelineContext` — Pydantic-typed configuration passed to every step.
+- `DataCatalog` — in-memory key → dataset store, agnostic to the dataframe
+  library in use (polars, pandas, spark, plain dicts).
+- DAG resolution — steps may be declared in any order; cycles and missing
+  inputs are rejected at `build()` rather than at run time.
+- Parallel execution with dependency-driven scheduling: independent steps run
+  concurrently once their inputs are satisfied.
+- `TestablePipeline` and `make_pipeline_fixture()` — mock reads and writes and
+  assert against the resulting catalog from a pytest fixture.
+- Typed error hierarchy: `PipelineError`, `PipelineValidationError`,
+  `PipelineCycleError`, `StepExecutionError`.
+- `py.typed` marker — the package ships inline type information.
+
+[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ahmedtilal/masoora/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/ahmedtilal/masoora/releases/tag/v0.1.0

@@ -1,0 +1,114 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+
+      - name: Run tests
+        run: uv run --python ${{ matrix.python-version }} pytest
+
+  build:
+    name: Build distributions
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10
+
+      # A tag that disagrees with pyproject.toml would publish a version nobody
+      # can trace back to a commit. Fail before anything is uploaded.
+      - name: Verify tag matches project version
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          project_version="$(uv version --short)"
+          if [ "$tag_version" != "$project_version" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} implies version ${tag_version}," \
+                 "but pyproject.toml declares ${project_version}."
+            exit 1
+          fi
+          echo "Version ${project_version} confirmed."
+
+      - name: Build
+        run: uv build
+
+      - name: Check metadata renders on PyPI
+        run: uv run --with twine twine check dist/*
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # mints the OIDC token for trusted publishing
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    name: Create GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      # Pull the section for this version out of CHANGELOG.md: start at its
+      # heading, stop at the next one.
+      - name: Extract release notes
+        run: |
+          awk -v ver="${GITHUB_REF_NAME#v}" '
+            $0 ~ "^## \\[" ver "\\]" { found = 1; next }
+            found && /^## \[/        { exit }
+            found                    { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::warning::No CHANGELOG.md section found for ${GITHUB_REF_NAME}."
+            echo "See CHANGELOG.md for details." > release-notes.md
+          fi
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md
