@@ -38,6 +38,24 @@ you use the testing helpers you need pytest installed. It ships as an extra:
     The core builder, pipeline, and catalog have no test-time dependencies, and
     `pipeline.to_testable()` works without pytest — see [Testing](guide/testing.md).
 
+## The pandera extra
+
+masoora never imports pandera — a validator is anything with `.validate(data)`,
+or any callable. This extra is a convenience for installing pandera alongside
+it. See [Data validation](guide/validation.md).
+
+=== "pip"
+
+    ```bash
+    pip install "masoora[pandera]"
+    ```
+
+=== "uv"
+
+    ```bash
+    uv add "masoora[pandera]"
+    ```
+
 ## Typing
 
 The package ships a `py.typed` marker and is checked under strict Mypy, so

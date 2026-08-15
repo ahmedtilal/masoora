@@ -1,7 +1,7 @@
 [project]
 name = "masoora"
-version = "0.1.4"
-description = "Fluent builder for testable ETL pipelines"
+version = "0.2.0"
+description = "Helper library for writing readable, testable data pipelines"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -54,6 +54,9 @@ docs = [
 
 [project.optional-dependencies]
 pytest = ["pytest>=9.0"]
+# Convenience only: masoora never imports pandera, it just accepts anything
+# exposing .validate(data).
+pandera = ["pandera>=0.32.1"]
 
 [tool.ruff]
 line-length = 100

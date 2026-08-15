@@ -114,6 +114,9 @@ At run time, a step that raises is wrapped in
 [`StepExecutionError`][masoora.StepExecutionError] so you get the failing
 step's identity alongside the original traceback.
 
+Structure is checked at build time; the data itself is checked at run time, and
+only for keys you have given a schema. See [Data validation](validation.md).
+
 ## Running part of a pipeline
 
 Pass `target` to run only the steps needed to produce one key:

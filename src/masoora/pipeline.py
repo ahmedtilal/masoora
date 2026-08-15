@@ -13,6 +13,7 @@ from masoora.errors import StepExecutionError
 from masoora.graph import ancestors_of_target, dependency_edges
 from masoora.steps import ReadStep, Step, WriteStep
 from masoora.testing import TestRunResult
+from masoora.validation import Validator
 
 if TYPE_CHECKING:
     from masoora.context import PipelineContext
@@ -122,12 +123,22 @@ def _dispatch(
 class Pipeline(Generic[ContextT]):
     """A topo-sorted sequence of steps. Built via PipelineBuilder."""
 
-    def __init__(self, steps: Sequence[Step[ContextT]]) -> None:
+    def __init__(
+        self,
+        steps: Sequence[Step[ContextT]],
+        validators: Mapping[str, Validator] | None = None,
+    ) -> None:
         self._steps: tuple[Step[ContextT], ...] = tuple(steps)
+        self._validators: dict[str, Validator] = dict(validators) if validators else {}
 
     @property
     def steps(self) -> tuple[Step[ContextT], ...]:
         return self._steps
+
+    @property
+    def validators(self) -> Mapping[str, Validator]:
+        """Catalog key -> validator, as declared on the builder."""
+        return dict(self._validators)
 
     def run(
         self,
@@ -148,6 +159,9 @@ class Pipeline(Generic[ContextT]):
         """
         steps = self._select(target)
         cat = catalog if catalog is not None else DataCatalog()
+        # A caller-supplied catalog holds the seeded keys, so it needs the
+        # validators too -- that is what gets seeds checked on first read.
+        cat.attach_validators(self._validators)
         _dispatch(steps, context, cat, parallel, executor)
         return cat
 
@@ -174,7 +188,7 @@ class Pipeline(Generic[ContextT]):
                 mocked.append(step)  # capture happens in TestablePipeline.run
             else:
                 mocked.append(step)
-        return TestablePipeline(steps=mocked, mock_writes=mock_writes)
+        return TestablePipeline(steps=mocked, mock_writes=mock_writes, validators=self._validators)
 
     def _select(self, target: str | None) -> list[Step[ContextT]]:
         if target is None:
@@ -185,9 +199,16 @@ class Pipeline(Generic[ContextT]):
 class TestablePipeline(Generic[ContextT]):
     """A pipeline with mocked reads/writes; run() returns a TestRunResult."""
 
-    def __init__(self, steps: Sequence[Step[ContextT]], *, mock_writes: bool) -> None:
+    def __init__(
+        self,
+        steps: Sequence[Step[ContextT]],
+        *,
+        mock_writes: bool,
+        validators: Mapping[str, Validator] | None = None,
+    ) -> None:
         self._steps: tuple[Step[ContextT], ...] = tuple(steps)
         self._mock_writes = mock_writes
+        self._validators: dict[str, Validator] = dict(validators) if validators else {}
 
     def run(
         self,
@@ -197,6 +218,7 @@ class TestablePipeline(Generic[ContextT]):
         executor: Executor | None = None,
     ) -> TestRunResult[ContextT]:
         cat = catalog if catalog is not None else DataCatalog()
+        cat.attach_validators(self._validators)
         written: dict[str, Any] = {}
         steps: list[Step[ContextT]] = []
         for step in self._steps:

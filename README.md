@@ -6,16 +6,24 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ahmedtilal/masoora/blob/master/LICENSE)
 [![Typed](https://img.shields.io/badge/typing-strict-blue.svg)](https://peps.python.org/pep-0561/)
 
-Fluent builder for testable ETL pipelines in Python.
+A helper library for writing data pipelines in Python.
 
-masoora is a **library, not a platform** — no scheduler, no server, no
-deployment. You define a pipeline in Python, run it in-process, and test it
-with a pytest fixture that swaps out every read and write.
+masoora handles the wiring — working out step order, passing data between
+steps, running independent steps at the same time — so your code stays focused
+on the transformations.
 
+It works with your orchestrator rather than replacing it. Build a pipeline,
+package it as a versioned wheel, and call it from an Airflow task: Airflow
+passes its parameters in as the context, and the pipeline runs as one task.
+Changing the pipeline is a version bump, not an orchestrator deployment.
+
+- **Readable**: the builder chain is the pipeline — where data comes from, what
+  happens to it, and where it goes, visible without running anything
 - **Fluent chaining**: `.with_read_step()` / `.with_transform_step()` / `.with_write_step()`
-- **Pydantic context**: typed configuration passed to every step
+- **Pydantic context**: typed configuration passed to every step, validated at the boundary
 - **Data catalog**: in-memory key → dataset store (polars/pandas/spark/dicts — anything)
 - **DAG resolution**: declare steps in any order; cycles and missing inputs fail at `build()`
+- **Data validation**: attach a pandera schema, or any callable, to a catalog key
 - **Parallel**: dependency-driven scheduling, no level barriers
 - **Testable**: mock reads/writes and assert on the catalog with a pytest fixture
 

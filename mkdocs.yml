@@ -1,5 +1,5 @@
 site_name: masoora
-site_description: Fluent builder for testable ETL pipelines in Python
+site_description: Helper library for writing readable, testable data pipelines in Python
 site_url: https://ahmedtilal.github.io/masoora/
 repo_url: https://github.com/ahmedtilal/masoora
 repo_name: ahmedtilal/masoora
@@ -50,8 +50,10 @@ nav:
   - Installation: installation.md
   - Guide:
       - Building pipelines: guide/pipelines.md
+      - Data validation: guide/validation.md
       - Parallel execution: guide/parallel.md
       - Testing: guide/testing.md
+      - Orchestrators: guide/orchestrators.md
   - API reference: reference/api.md
 
 plugins:

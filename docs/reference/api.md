@@ -15,6 +15,10 @@ source, so it always matches the installed version.
 
 ::: masoora.DataCatalog
 
+## Validation
+
+::: masoora.Validator
+
 ## Steps
 
 ::: masoora.ReadStep
@@ -38,5 +42,7 @@ source, so it always matches the installed version.
 ::: masoora.PipelineValidationError
 
 ::: masoora.PipelineCycleError
+
+::: masoora.DataValidationError
 
 ::: masoora.StepExecutionError

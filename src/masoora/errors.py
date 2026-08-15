@@ -19,6 +19,19 @@ class PipelineCycleError(PipelineValidationError):
         super().__init__(f"Pipeline contains a dependency cycle: {' -> '.join(cycle)}")
 
 
+class DataValidationError(PipelineError):
+    """Raised when a catalog value fails the validator declared for its key."""
+
+    def __init__(self, key: str, phase: str, original: Exception) -> None:
+        self.key = key
+        self.phase = phase
+        self.original = original
+        super().__init__(
+            f"Data for catalog key {key!r} failed validation on {phase}: "
+            f"{type(original).__name__}: {original}"
+        )
+
+
 class StepExecutionError(PipelineError):
     """Raised when a step fails during run()."""
 
