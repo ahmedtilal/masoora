@@ -3,6 +3,7 @@ name = "masoora"
 version = "0.1.0"
 description = "Fluent builder for testable ETL pipelines"
 readme = "README.md"
+license = { text = "MIT" }
 authors = [
     { name = "Ahmed Osman", email = "79141373+ahmedtilal@users.noreply.github.com" }
 ]
