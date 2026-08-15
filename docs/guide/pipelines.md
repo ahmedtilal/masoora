@@ -91,8 +91,8 @@ order reads best:
 ```python
 pipeline = (
     PipelineBuilder[MyContext]()
-    .with_write_step(write_db, inputs=["top"])       # declared first
-    .with_read_step(read_events, output="events")    # runs first
+    .with_write_step(write_db, inputs=["top"])  # declared first
+    .with_read_step(read_events, output="events")  # runs first
     .with_transform_step(score, inputs=["events"], output="scored")
     .with_transform_step(filter_top, inputs=["scored"], output="top")
     .build()

@@ -4,9 +4,9 @@ Pipelines run sequentially by default. Pass `parallel` to run independent
 steps concurrently:
 
 ```python
-pipeline.run(ctx, parallel=True)     # thread pool, os.cpu_count() workers
-pipeline.run(ctx, parallel=4)        # explicit worker count
-pipeline.run(ctx, executor=pool)     # your own Executor
+pipeline.run(ctx, parallel=True)  # thread pool, os.cpu_count() workers
+pipeline.run(ctx, parallel=4)  # explicit worker count
+pipeline.run(ctx, executor=pool)  # your own Executor
 ```
 
 An executor you supply is **not** shut down by masoora — its lifetime stays
