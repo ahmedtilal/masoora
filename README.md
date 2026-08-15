@@ -132,6 +132,7 @@ feels awkward to use, that is worth an issue.
 
 ## Links
 
+- [Documentation](https://ahmedtilal.github.io/masoora/)
 - [Changelog](https://github.com/ahmedtilal/masoora/blob/master/CHANGELOG.md)
 - [PyPI](https://pypi.org/project/masoora/)
 - [Issues](https://github.com/ahmedtilal/masoora/issues)
