@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-15
+
+Documentation release. There are no changes to library behaviour or the public
+API; upgrading from 0.1.3 is a no-op at runtime.
+
+### Added
+
+- A documentation site at <https://ahmedtilal.github.io/masoora/>, with guides
+  for building pipelines, parallel execution, and testing, plus a generated
+  API reference for every public symbol.
+- `Documentation` in the project URLs, so the site is reachable from the PyPI
+  sidebar.
+
+### Changed
+
+- The `Homepage` project URL now points at the documentation site rather than
+  the repository. `Repository` still points at GitHub.
+
 ## [0.1.3] - 2026-08-15
 
 Documentation release. There are no changes to library behaviour or the public
@@ -68,7 +86,8 @@ Initial release.
   `PipelineCycleError`, `StepExecutionError`.
 - `py.typed` marker — the package ships inline type information.
 
-[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/ahmedtilal/masoora/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ahmedtilal/masoora/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ahmedtilal/masoora/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ahmedtilal/masoora/compare/v0.1.0...v0.1.1
