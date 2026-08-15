@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2026-08-15
 
-Includes everything in 0.2.0, which was tagged but never published.
-
 ### Added
 
 - `Pipeline.to_mermaid()`, rendering the pipeline as a Mermaid flowchart.
