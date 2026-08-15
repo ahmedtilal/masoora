@@ -1,12 +1,42 @@
 # masoora
 
+[![PyPI](https://img.shields.io/pypi/v/masoora.svg)](https://pypi.org/project/masoora/)
+[![Python versions](https://img.shields.io/pypi/pyversions/masoora.svg)](https://pypi.org/project/masoora/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Typed](https://img.shields.io/badge/typing-strict-blue.svg)](https://peps.python.org/pep-0561/)
+
 Fluent builder for testable ETL pipelines in Python.
+
+masoora is a **library, not a platform** — no scheduler, no server, no
+deployment. You define a pipeline in Python, run it in-process, and test it
+with a pytest fixture that swaps out every read and write.
 
 - **Fluent chaining**: `.with_read_step()` / `.with_transform_step()` / `.with_write_step()`
 - **Pydantic context**: typed configuration passed to every step
 - **Data catalog**: in-memory key → dataset store (polars/pandas/spark/dicts — anything)
 - **DAG resolution**: declare steps in any order; cycles and missing inputs fail at `build()`
+- **Parallel**: dependency-driven scheduling, no level barriers
 - **Testable**: mock reads/writes and assert on the catalog with a pytest fixture
+
+## Installation
+
+```bash
+pip install masoora
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add masoora
+```
+
+Requires Python 3.10+. The only runtime dependency is Pydantic.
+
+The pytest helpers (`make_pipeline_fixture`) need pytest, available as an extra:
+
+```bash
+pip install "masoora[pytest]"
+```
 
 ## Usage
 
@@ -95,3 +125,15 @@ uv run pytest
 uv run ruff check .
 uv run mypy src tests
 ```
+
+Issues and pull requests are welcome. The API is still young — if something
+feels awkward to use, that is worth an issue.
+
+## Links
+
+- [Changelog](CHANGELOG.md)
+- [PyPI](https://pypi.org/project/masoora/)
+
+## License
+
+MIT — see [LICENSE](LICENSE).
