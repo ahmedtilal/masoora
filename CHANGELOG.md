@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-15
+
+Documentation release. There are no changes to library behaviour or the public
+API; upgrading from 0.1.2 is a no-op at runtime.
+
+### Fixed
+
+- The changelog and license links on the PyPI project page. They were written
+  as repository-relative paths, which GitHub resolves but PyPI does not — on
+  pypi.org they resolved against the project page and 404'd. All README links
+  are now absolute.
+
+### Added
+
+- A `Changelog` entry in the project URLs, so it appears in the PyPI sidebar
+  rather than only inside the rendered README.
+
 ## [0.1.2] - 2026-08-15
 
 Documentation release. There are no changes to library behaviour or the public
@@ -51,7 +68,8 @@ Initial release.
   `PipelineCycleError`, `StepExecutionError`.
 - `py.typed` marker — the package ships inline type information.
 
-[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/ahmedtilal/masoora/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ahmedtilal/masoora/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ahmedtilal/masoora/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ahmedtilal/masoora/releases/tag/v0.1.0

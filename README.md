@@ -3,7 +3,7 @@
 [![CI](https://github.com/ahmedtilal/masoora/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmedtilal/masoora/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/masoora.svg)](https://pypi.org/project/masoora/)
 [![Python versions](https://img.shields.io/pypi/pyversions/masoora.svg)](https://pypi.org/project/masoora/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ahmedtilal/masoora/blob/master/LICENSE)
 [![Typed](https://img.shields.io/badge/typing-strict-blue.svg)](https://peps.python.org/pep-0561/)
 
 Fluent builder for testable ETL pipelines in Python.
@@ -132,9 +132,10 @@ feels awkward to use, that is worth an issue.
 
 ## Links
 
-- [Changelog](CHANGELOG.md)
+- [Changelog](https://github.com/ahmedtilal/masoora/blob/master/CHANGELOG.md)
 - [PyPI](https://pypi.org/project/masoora/)
+- [Issues](https://github.com/ahmedtilal/masoora/issues)
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/ahmedtilal/masoora/blob/master/LICENSE).
