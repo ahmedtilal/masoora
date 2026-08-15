@@ -99,6 +99,60 @@ pipeline = (
 )
 ```
 
+## Seeing the pipeline
+
+[`to_mermaid()`][masoora.Pipeline.to_mermaid] renders the pipeline as a Mermaid
+flowchart:
+
+```python
+print(pipeline.to_mermaid())
+```
+
+```mermaid
+flowchart TD
+    n0["read_events"]:::read
+    n1["score"]:::transform
+    n2["filter_top"]:::transform
+    n3["write_db"]:::write
+    n0 -->|"events"| n1
+    n1 -->|"scored"| n2
+    n2 -->|"top"| n3
+    classDef read fill:#dbeafe,stroke:#2563eb,color:#0b2a5b;
+    classDef transform fill:#e5e7eb,stroke:#4b5563,color:#111827;
+    classDef write fill:#dcfce7,stroke:#16a34a,color:#052e16;
+    classDef data fill:#fef3c7,stroke:#d97706,color:#451a03;
+```
+
+Steps are nodes, coloured by kind. Catalog keys label the edges, except at the
+boundaries: seeded inputs and outputs nothing consumes get their own nodes, so
+you can see what the pipeline takes and what it leaves behind.
+
+```mermaid
+flowchart LR
+    n0["score"]:::transform
+    seed0(["raw_events"]):::data
+    out0(["scored"]):::data
+    seed0 --> n0
+    n0 --> out0
+    classDef read fill:#dbeafe,stroke:#2563eb,color:#0b2a5b;
+    classDef transform fill:#e5e7eb,stroke:#4b5563,color:#111827;
+    classDef write fill:#dcfce7,stroke:#16a34a,color:#052e16;
+    classDef data fill:#fef3c7,stroke:#d97706,color:#451a03;
+```
+
+No dependencies are involved — the output is text. Paste it into a
+```` ```mermaid ```` fence and GitHub, these docs, and Jupyter all render it.
+
+Two arguments:
+
+```python
+pipeline.to_mermaid(direction="LR")       # TD, TB, BT, LR, RL
+pipeline.to_mermaid(target="scored")      # only the steps feeding one key
+```
+
+Output is deterministic for a given pipeline, so a committed diagram only
+changes when the pipeline does.
+
 ## Validation happens at build time
 
 `build()` is where a malformed pipeline fails, not partway through a run:

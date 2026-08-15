@@ -9,6 +9,7 @@ from concurrent.futures import FIRST_COMPLETED, Executor, Future, ThreadPoolExec
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from masoora.catalog import DataCatalog
+from masoora.diagram import to_mermaid
 from masoora.errors import StepExecutionError
 from masoora.graph import ancestors_of_target, dependency_edges
 from masoora.steps import ReadStep, Step, WriteStep
@@ -164,6 +165,18 @@ class Pipeline(Generic[ContextT]):
         cat.attach_validators(self._validators)
         _dispatch(steps, context, cat, parallel, executor)
         return cat
+
+    def to_mermaid(self, *, target: str | None = None, direction: str = "TD") -> str:
+        """Render the pipeline as a Mermaid flowchart definition.
+
+        Steps are nodes and catalog keys are edge labels; seeded inputs and
+        unconsumed outputs get their own nodes. Paste the result into a
+        ```mermaid fence -- GitHub, MkDocs Material and Jupyter all render it.
+
+        target: diagram only the steps needed to produce that key.
+        direction: any Mermaid flowchart direction (TD, LR, ...).
+        """
+        return to_mermaid(self._select(target), direction=direction)
 
     def to_testable(
         self,

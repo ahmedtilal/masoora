@@ -87,6 +87,8 @@ See [Testing](guide/testing.md).
   is read.
 - **Data validation** — attach a pandera schema, or any callable, to a catalog
   key. See [Data validation](guide/validation.md).
+- **Diagrams** — [`to_mermaid()`][masoora.Pipeline.to_mermaid] renders the DAG
+  for a README, these docs, or a notebook. No dependencies.
 - **Parallel execution** — dependency-driven scheduling with no level
   barriers. See [Parallel execution](guide/parallel.md).
 

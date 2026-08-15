@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-15
+
+Includes everything in 0.2.0, which was tagged but never published.
+
+### Added
+
+- `Pipeline.to_mermaid()`, rendering the pipeline as a Mermaid flowchart.
+  Steps are nodes coloured by kind and catalog keys label the edges; seeded
+  inputs and outputs nothing consumes get their own nodes. Takes `direction`
+  and `target`. The output is text and needs no dependencies — GitHub, MkDocs
+  Material and Jupyter all render it. Output is deterministic, so a committed
+  diagram changes only when the pipeline does.
+
 ## [0.2.0] - 2026-08-15
 
 ### Added
@@ -114,7 +127,8 @@ Initial release.
   `PipelineCycleError`, `StepExecutionError`.
 - `py.typed` marker — the package ships inline type information.
 
-[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/ahmedtilal/masoora/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ahmedtilal/masoora/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/ahmedtilal/masoora/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ahmedtilal/masoora/compare/v0.1.2...v0.1.3

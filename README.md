@@ -24,6 +24,7 @@ Changing the pipeline is a version bump, not an orchestrator deployment.
 - **Data catalog**: in-memory key → dataset store (polars/pandas/spark/dicts — anything)
 - **DAG resolution**: declare steps in any order; cycles and missing inputs fail at `build()`
 - **Data validation**: attach a pandera schema, or any callable, to a catalog key
+- **Diagrams**: `pipeline.to_mermaid()` renders the DAG, no dependencies
 - **Parallel**: dependency-driven scheduling, no level barriers
 - **Testable**: mock reads/writes and assert on the catalog with a pytest fixture
 
@@ -74,6 +75,23 @@ pipeline = (
 )
 
 catalog = pipeline.run(MyContext(source_url="https://..."))
+```
+
+`pipeline.to_mermaid()` renders the same pipeline as a diagram:
+
+```mermaid
+flowchart TD
+    n0["read_events"]:::read
+    n1["score"]:::transform
+    n2["filter_top"]:::transform
+    n3["write_db"]:::write
+    n0 -->|"events"| n1
+    n1 -->|"scored"| n2
+    n2 -->|"top"| n3
+    classDef read fill:#dbeafe,stroke:#2563eb,color:#0b2a5b;
+    classDef transform fill:#e5e7eb,stroke:#4b5563,color:#111827;
+    classDef write fill:#dcfce7,stroke:#16a34a,color:#052e16;
+    classDef data fill:#fef3c7,stroke:#d97706,color:#451a03;
 ```
 
 Step signatures:
