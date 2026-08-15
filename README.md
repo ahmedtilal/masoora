@@ -13,14 +13,17 @@ Fluent builder for testable ETL pipelines in Python.
 ```python
 from masoora import PipelineBuilder, PipelineContext
 
+
 class MyContext(PipelineContext):
     source_url: str
     min_score: float = 0.5
+
 
 def read_events(ctx: MyContext): ...
 def score(ctx: MyContext, events): ...
 def filter_top(ctx: MyContext, scored): ...
 def write_db(ctx: MyContext, top): ...
+
 
 pipeline = (
     PipelineBuilder[MyContext]()
@@ -46,6 +49,25 @@ Steps may be declared in any order — `build()` topo-sorts them. Run only what'
 needed for one output with `pipeline.run(ctx, target="top")`. Pre-populated
 catalog keys are declared with `.with_seed(key)`.
 
+## Parallel execution
+
+```python
+pipeline.run(ctx, parallel=True)  # thread pool, os.cpu_count() workers
+pipeline.run(ctx, parallel=4)  # explicit worker count
+pipeline.run(ctx, executor=pool)  # your Executor (not shut down by masoora)
+```
+
+Steps run concurrently in a `ThreadPoolExecutor` with dependency-driven
+scheduling: each step starts the instant its own dependencies finish — there
+is no level barrier, so unrelated slow steps never delay a ready branch.
+Fail-fast: the first step error cancels queued work and raises
+`StepExecutionError` immediately; already-running siblings finish in the
+background.
+
+Contract: steps must only read their declared input keys, write their own
+output key, and treat the context as read-only. Under this contract parallel
+results are identical to sequential.
+
 ## Testing
 
 ```python
@@ -54,8 +76,9 @@ from masoora import TestRunResult, make_pipeline_fixture
 run_pipeline = make_pipeline_fixture(
     pipeline,
     MyContext(source_url="test"),
-    reads={"events": fake_events},   # read step is replaced, real source untouched
+    reads={"events": fake_events},  # read step is replaced, real source untouched
 )
+
 
 def test_top_events(run_pipeline: TestRunResult[MyContext]) -> None:
     assert run_pipeline.catalog["top"] == expected

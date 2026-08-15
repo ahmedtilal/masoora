@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import os
+from collections import deque
 from collections.abc import Mapping, Sequence
+from concurrent.futures import FIRST_COMPLETED, Executor, Future, ThreadPoolExecutor, wait
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from masoora.catalog import DataCatalog
 from masoora.errors import StepExecutionError
-from masoora.graph import ancestors_of_target
+from masoora.graph import ancestors_of_target, dependency_edges
 from masoora.steps import ReadStep, Step, WriteStep
 from masoora.testing import TestRunResult
 
@@ -15,6 +18,9 @@ if TYPE_CHECKING:
     from masoora.context import PipelineContext
 
 ContextT = TypeVar("ContextT", bound="PipelineContext")
+
+#: parallel=False -> sequential; True -> os.cpu_count() workers; int -> N workers
+ParallelMode = bool | int
 
 
 def _execute_steps(
@@ -25,6 +31,92 @@ def _execute_steps(
             step.execute(context, catalog)
         except Exception as exc:
             raise StepExecutionError(index, step.name, exc) from exc
+
+
+def _execute_parallel(
+    steps: Sequence[Step[ContextT]],
+    context: ContextT,
+    catalog: DataCatalog,
+    parallel: ParallelMode,
+    executor: Executor | None,
+) -> None:
+    """Dependency-driven scheduling; fail-fast on the first error.
+
+    Each step is submitted the instant its own dependencies complete (no
+    level barrier). Correct under the masoora step contract: steps only read
+    declared input keys and write their own output key, and treat context as
+    read-only.
+    """
+    steps = list(steps)
+    n = len(steps)
+    deps, dependents = dependency_edges(steps)
+    remaining = [len(dep_set) for dep_set in deps]
+    ready: deque[int] = deque(idx for idx in range(n) if remaining[idx] == 0)
+    futures: dict[Future[None], int] = {}
+    completed = 0
+
+    pool: Executor
+    if executor is not None:
+        pool = executor
+        owns_pool = False
+    else:
+        workers = None
+        if parallel is True:
+            workers = os.cpu_count()
+        elif isinstance(parallel, int) and parallel > 0:
+            workers = parallel
+        pool = ThreadPoolExecutor(max_workers=workers)
+        owns_pool = True
+
+    error: tuple[int, str, BaseException] | None = None
+    try:
+        while completed < n:
+            while ready and error is None:
+                idx = ready.popleft()
+                futures[pool.submit(steps[idx].execute, context, catalog)] = idx
+            if not futures:
+                break
+            finished, _ = wait(set(futures), return_when=FIRST_COMPLETED)
+            for future in finished:
+                idx = futures.pop(future)
+                completed += 1
+                exc = future.exception()
+                if exc is not None:
+                    if error is None:
+                        error = (idx, steps[idx].name, exc)
+                elif error is None:
+                    for nxt in dependents[idx]:
+                        remaining[nxt] -= 1
+                        if remaining[nxt] == 0:
+                            ready.append(nxt)
+            if error is not None:
+                for future in futures:
+                    future.cancel()
+                break
+    finally:
+        if owns_pool:
+            # On failure return promptly: cancel queued work, don't wait for
+            # running steps (they only touch their own catalog keys).
+            pool.shutdown(wait=error is None, cancel_futures=error is not None)
+
+    if error is not None:
+        index, name, exc = error
+        if isinstance(exc, Exception):
+            raise StepExecutionError(index, name, exc) from exc
+        raise exc  # KeyboardInterrupt & co. propagate unwrapped
+
+
+def _dispatch(
+    steps: Sequence[Step[ContextT]],
+    context: ContextT,
+    catalog: DataCatalog,
+    parallel: ParallelMode,
+    executor: Executor | None,
+) -> None:
+    if executor is None and not parallel:
+        _execute_steps(steps, context, catalog)
+    else:
+        _execute_parallel(steps, context, catalog, parallel, executor)
 
 
 class Pipeline(Generic[ContextT]):
@@ -42,11 +134,21 @@ class Pipeline(Generic[ContextT]):
         context: ContextT,
         catalog: DataCatalog | None = None,
         target: str | None = None,
+        parallel: ParallelMode = False,
+        executor: Executor | None = None,
     ) -> DataCatalog:
-        """Execute all steps (or only those needed for `target`) in topo order."""
+        """Execute all steps (or only those needed for `target`) in topo order.
+
+        parallel: False (default) runs sequentially; True uses a thread pool
+        with os.cpu_count() workers; an int sets the worker count. Steps run
+        concurrently, each starting the instant its own dependencies finish
+        (dependency-driven scheduling, no level barrier).
+        executor: caller-provided Executor; wins over `parallel` and is NOT
+        shut down by the pipeline.
+        """
         steps = self._select(target)
         cat = catalog if catalog is not None else DataCatalog()
-        _execute_steps(steps, context, cat)
+        _dispatch(steps, context, cat, parallel, executor)
         return cat
 
     def to_testable(
@@ -87,7 +189,13 @@ class TestablePipeline(Generic[ContextT]):
         self._steps: tuple[Step[ContextT], ...] = tuple(steps)
         self._mock_writes = mock_writes
 
-    def run(self, context: ContextT, catalog: DataCatalog | None = None) -> TestRunResult[ContextT]:
+    def run(
+        self,
+        context: ContextT,
+        catalog: DataCatalog | None = None,
+        parallel: ParallelMode = False,
+        executor: Executor | None = None,
+    ) -> TestRunResult[ContextT]:
         cat = catalog if catalog is not None else DataCatalog()
         written: dict[str, Any] = {}
         steps: list[Step[ContextT]] = []
@@ -101,5 +209,5 @@ class TestablePipeline(Generic[ContextT]):
                 steps.append(WriteStep(fn=capture, inputs=step.inputs))
             else:
                 steps.append(step)
-        _execute_steps(steps, context, cat)
+        _dispatch(steps, context, cat, parallel, executor)
         return TestRunResult(catalog=cat, written=written)

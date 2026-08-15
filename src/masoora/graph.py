@@ -76,6 +76,19 @@ def _find_cycle(steps: list[Step[ContextT]], deps: list[set[int]]) -> list[str]:
     return [*names, steps[current].name]
 
 
+def dependency_edges(
+    steps: list[Step[ContextT]],
+) -> tuple[list[set[int]], list[list[int]]]:
+    """Return (deps, dependents): deps[i] = indices that must finish before
+    steps[i]; dependents[i] = indices that depend on steps[i]."""
+    deps = _dependencies(steps)
+    dependents: list[list[int]] = [[] for _ in steps]
+    for idx, dep_set in enumerate(deps):
+        for dep in dep_set:
+            dependents[dep].append(idx)
+    return deps, dependents
+
+
 def ancestors_of_target(steps: list[Step[ContextT]], target: str) -> list[Step[ContextT]]:
     """Return the topo-ordered subset of steps needed to produce `target`.
 
