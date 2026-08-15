@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-15
+
+Documentation release. There are no changes to library behaviour or the public
+API; upgrading from 0.1.1 is a no-op at runtime.
+
+### Added
+
+- Installation instructions in the README, including the `masoora[pytest]`
+  extra required by `make_pipeline_fixture`. This is the point of the release:
+  the PyPI page embeds the README from the published artifact, so the
+  instructions only reach pypi.org by shipping a new version.
+- Continuous integration on pushes and pull requests: the test suite across
+  Python 3.10–3.14, plus Ruff lint, Ruff format, and strict Mypy.
+
 ## [0.1.1] - 2026-08-15
 
 Packaging-only release. There are no changes to library behaviour or the public
@@ -37,6 +51,7 @@ Initial release.
   `PipelineCycleError`, `StepExecutionError`.
 - `py.typed` marker — the package ships inline type information.
 
-[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ahmedtilal/masoora/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ahmedtilal/masoora/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ahmedtilal/masoora/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ahmedtilal/masoora/releases/tag/v0.1.0

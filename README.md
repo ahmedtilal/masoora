@@ -1,5 +1,6 @@
 # masoora
 
+[![CI](https://github.com/ahmedtilal/masoora/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmedtilal/masoora/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/masoora.svg)](https://pypi.org/project/masoora/)
 [![Python versions](https://img.shields.io/pypi/pyversions/masoora.svg)](https://pypi.org/project/masoora/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
