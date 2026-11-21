@@ -98,7 +98,11 @@ See [Testing](guide/testing.md).
 
 - **[Installation](installation.md)** — install from PyPI, plus the extras.
 - **[Building pipelines](guide/pipelines.md)** — steps, the catalog, and DAG rules.
+- **[Context and dependency injection](guide/context.md)** — config versus injected clients.
+- **[Fan-out and fan-in](guide/fan-out.md)** — splitting and joining datasets.
 - **[Data validation](guide/validation.md)** — schemas on catalog keys.
+- **[Errors and retries](guide/errors.md)** — failures, exit codes, idempotent writes.
+- **[Example: swappable storage](examples/swappable-storage.md)** — a small, complete pipeline.
 - **[Parallel execution](guide/parallel.md)** — the concurrency contract.
 - **[Testing](guide/testing.md)** — fixtures, fakes, and captured writes.
 - **[Orchestrators](guide/orchestrators.md)** — packaging and running under Airflow.

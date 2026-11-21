@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Documentation only. There are no changes to library behaviour or the public
+API.
+
+### Added
+
+- Installation: the current version, the tested Python range (3.10 to 3.14),
+  and a stability statement covering the `0.x` policy, what counts as public
+  API, and pinning an exact version.
+- Guide: "Context and dependency injection", on what belongs in the context
+  versus a factory function with closure steps, and why `arbitrary_types_allowed`
+  is set.
+- Guide: "Fan-out and fan-in", a worked example of splitting one dataset into
+  two outputs and writing several inputs, with its `to_mermaid()` diagram and
+  the order in which a step receives multiple inputs.
+- Guide: "Errors and retries", covering what `StepExecutionError` carries, that
+  only `Exception` is wrapped, exiting non-zero from a CLI, what is not rolled
+  back, idempotent writes, and writing the completion marker last.
+- Building pipelines: how step names are derived (and what lambdas and
+  `functools.partial` produce), how independent steps are ordered, getting
+  results from the returned catalog, that async steps are not supported, and
+  that the catalog holds every dataset until the run ends.
+- Testing: `to_testable()` without pytest, what `reads=` replaces, how `written`
+  is keyed, seeding a catalog, and running a write step for real with
+  `mock_writes=False` and `tmp_path`.
+- Orchestrators: a plain CLI, cron and Cloud Run Job example alongside Airflow.
+- "Example: a pipeline with swappable storage", a small runnable pipeline with a
+  `Protocol`-based store, a fake for tests, pytest tests and a diagram.
+
+### Fixed
+
+- The Orchestrators page used `Pipeline[...]` without importing it.
+
 ## [0.3.0] - 2026-08-15
 
 ### Added

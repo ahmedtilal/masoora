@@ -22,7 +22,7 @@ already use.
 
 ```python
 # my_pipelines/daily_events.py
-from masoora import PipelineBuilder, PipelineContext
+from masoora import Pipeline, PipelineBuilder, PipelineContext
 
 
 class DailyEventsContext(PipelineContext):
@@ -69,6 +69,85 @@ daily_events()
 
 The DAG file stays small. It says when to run and what parameters to pass.
 Everything else lives in the versioned package.
+
+## Without an orchestrator
+
+You do not need Airflow to run a pipeline. If your scheduler is cron, a Cloud
+Run Job, a Kubernetes CronJob, or a button on your laptop, the pattern is the
+same: a small command-line entry point builds the context from its arguments,
+runs the pipeline, and exits non-zero on failure. The scheduler supplies the
+schedule and the retries; the process exit code is the whole contract.
+
+```python
+# my_pipelines/cli.py
+import typer
+
+from masoora import StepExecutionError
+from my_pipelines.daily_events import DailyEventsContext, build
+
+
+def main(run_date: str, source_url: str, min_score: float = 0.5) -> None:
+    """Run the daily events pipeline for one date."""
+    ctx = DailyEventsContext(run_date=run_date, source_url=source_url, min_score=min_score)
+    try:
+        catalog = build().run(ctx, parallel=True)
+    except StepExecutionError as exc:
+        typer.echo(f"{exc.step_name} failed: {exc.original!r}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"scored={len(catalog['scored'])}")
+
+
+def cli() -> None:
+    typer.run(main)
+
+
+if __name__ == "__main__":
+    cli()
+```
+
+The command line is validated by Pydantic exactly as Airflow's params are: a bad
+`run_date` fails before any data is read. For how to unwrap the error and why
+the exit code matters, see [Errors and retries](errors.md#turning-it-into-a-non-zero-exit).
+Declare the script in your package's `pyproject.toml` so installing the wheel
+gives you a command:
+
+```toml
+[project.scripts]
+daily-events = "my_pipelines.cli:cli"
+```
+
+Typer is not a masoora dependency; add it to your own package's dependencies, or
+use `argparse` and `sys.exit(1)` if you would rather not.
+
+### Cron
+
+```cron
+0 2 * * *  daily-events "$(date +\%F)" s3://events/ >> /var/log/daily-events.log 2>&1
+```
+
+### Cloud Run Jobs and other containers
+
+Install the pinned wheel in the image and make the command the entry point
+(the names below are placeholders for your own). The job runs to completion and the platform reads the exit code: zero is
+success, non-zero marks the execution failed and triggers the job's own retry
+setting.
+
+```dockerfile
+FROM python:3.12-slim
+RUN pip install --no-cache-dir "my-pipelines==2.3.0"
+ENTRYPOINT ["daily-events"]
+```
+
+```bash
+gcloud run jobs create daily-events \
+  --image europe-docker.pkg.dev/my-project/jobs/daily-events:2.3.0 \
+  --args="2026-01-31,s3://events/" \
+  --max-retries=2
+```
+
+Because the platform may retry a failed execution, the writes in the pipeline
+must be safe to run again — see
+[Designing writes for failure](errors.md#designing-writes-for-failure).
 
 ## Why this is worth doing
 
