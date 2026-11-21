@@ -1,4 +1,4 @@
-"""masoora: fluent builder for testable ETL pipelines."""
+"""masoora: helper library for writing readable, testable data pipelines."""
 
 from masoora.builder import PipelineBuilder
 from masoora.catalog import DataCatalog
