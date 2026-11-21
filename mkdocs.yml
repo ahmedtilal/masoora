@@ -50,10 +50,15 @@ nav:
   - Installation: installation.md
   - Guide:
       - Building pipelines: guide/pipelines.md
+      - Context and dependency injection: guide/context.md
+      - Fan-out and fan-in: guide/fan-out.md
       - Data validation: guide/validation.md
+      - Errors and retries: guide/errors.md
       - Parallel execution: guide/parallel.md
       - Testing: guide/testing.md
       - Orchestrators: guide/orchestrators.md
+  - Examples:
+      - Swappable storage: examples/swappable-storage.md
   - API reference: reference/api.md
 
 plugins:

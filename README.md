@@ -40,7 +40,11 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add masoora
 ```
 
-Requires Python 3.10+. The only runtime dependency is Pydantic.
+Tested on Python 3.10 to 3.14. The only runtime dependency is Pydantic.
+
+masoora is alpha and follows semver's `0.x` rules: minor releases may change
+the public API, so pin an exact version (`masoora==0.3.0`). See the
+[stability policy](https://ahmedtilal.github.io/masoora/installation/#stability).
 
 The pytest helpers (`make_pipeline_fixture`) need pytest, available as an extra:
 
