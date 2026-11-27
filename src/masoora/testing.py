@@ -4,14 +4,17 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
 
 if TYPE_CHECKING:
+    from pytest import Config
+
     from masoora.catalog import DataCatalog
     from masoora.context import PipelineContext
     from masoora.pipeline import Pipeline
 
 ContextT = TypeVar("ContextT", bound="PipelineContext")
+_FixtureScope = Literal["function", "class", "module", "package", "session"]
 
 
 @dataclass
@@ -35,8 +38,14 @@ def make_pipeline_fixture(
     *,
     mock_writes: bool = True,
     target: str | None = None,
+    scope: _FixtureScope | Callable[[str, Config], _FixtureScope] = "function",
 ) -> Callable[[], TestRunResult[ContextT]]:
     """Create a pytest fixture that runs the pipeline with mocked IO.
+
+    Pytest controls the fixture lifetime through ``scope``, which defaults to
+    ``"function"``. A scope callable receives ``fixture_name`` and ``config`` as
+    keyword arguments. A context factory is called once per fixture instance.
+    Tests sharing a result must treat its datasets as read-only.
 
     Usage:
         run_pipeline = make_pipeline_fixture(
@@ -51,7 +60,7 @@ def make_pipeline_fixture(
     except ImportError as exc:  # pragma: no cover
         raise ImportError("make_pipeline_fixture requires pytest; install masoora[pytest]") from exc
 
-    @pytest.fixture
+    @pytest.fixture(scope=scope)
     def _fixture() -> TestRunResult[ContextT]:
         ctx = context() if callable(context) else context
         return pipeline.to_testable(reads=reads, mock_writes=mock_writes, target=target).run(ctx)

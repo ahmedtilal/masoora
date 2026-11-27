@@ -90,10 +90,10 @@ The mocked write step is also replaced wholesale, so the real write function
 is **not** called. Anything it would have done, including validating its
 arguments, does not happen. That is what the next section is for.
 
-## A fresh context per test
+## Fixture scope and context
 
-Pass a **callable** instead of an instance when the context must not be shared
-between tests:
+Pass a context factory to create a fresh context for each fixture instance.
+By default, pytest creates a fixture instance for each test that requests it.
 
 ```python
 run_pipeline = make_pipeline_fixture(
@@ -103,8 +103,12 @@ run_pipeline = make_pipeline_fixture(
 )
 ```
 
-With a plain instance, every test that requests the fixture sees the same
-object. That is fine for a frozen config and a problem for anything mutable.
+Pass `scope="module"` to run the pipeline and context factory once for all tests
+in a module that request the fixture. Tests sharing a result must treat its
+datasets as read-only. The `scope` argument also accepts other pytest scope
+names and a pytest scope callable.
+
+Passing a context instance reuses that object across fixture runs.
 
 ## Without pytest
 
