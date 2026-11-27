@@ -54,3 +54,24 @@ jobs:
 
       - name: Mypy
         run: uv run mypy src tests
+
+  release-metadata:
+    name: Release metadata
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          python-version: "3.14"
+
+      - name: Check lockfile
+        run: uv lock --check
+
+      - name: Check changelog for version bumps
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: uv run --no-project --python 3.14 python .github/scripts/check_release_metadata.py "$BASE_SHA"
