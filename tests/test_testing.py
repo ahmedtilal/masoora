@@ -1,6 +1,10 @@
+from collections.abc import Callable
+from typing import Literal
+
+import pytest
 from conftest import Ctx
 
-from masoora import PipelineBuilder, TestRunResult, make_pipeline_fixture
+from masoora import Pipeline, PipelineBuilder, TestRunResult, make_pipeline_fixture
 
 
 def read_source(ctx: Ctx) -> list[int]:
@@ -40,6 +44,51 @@ def test_fixture_mocks_reads_and_writes(run_pipeline: TestRunResult[Ctx]) -> Non
     assert run_pipeline.catalog["doubled"] == [2, 4, 6]
     assert run_pipeline.catalog["filtered"] == [4, 6]
     assert run_pipeline.written["filtered"] == [4, 6]
+
+
+def scope_probe() -> tuple[Pipeline[Ctx], Callable[[], Ctx], list[str]]:
+    calls: list[str] = []
+
+    def context_factory() -> Ctx:
+        calls.append("context")
+        return Ctx(n=3)
+
+    def read(ctx: Ctx) -> int:
+        calls.append("read")
+        return ctx.n
+
+    pipeline = PipelineBuilder[Ctx]().with_read_step(read, output="raw").build()
+    return pipeline, context_factory, calls
+
+
+def module_scope(fixture_name: str, config: pytest.Config) -> Literal["module"]:
+    return "module"
+
+
+default_pipeline, default_context, default_calls = scope_probe()
+module_pipeline, module_context, module_calls = scope_probe()
+dynamic_pipeline, dynamic_context, dynamic_calls = scope_probe()
+
+default_run = make_pipeline_fixture(default_pipeline, default_context)
+module_run = make_pipeline_fixture(module_pipeline, module_context, scope="module")
+dynamic_run = make_pipeline_fixture(dynamic_pipeline, dynamic_context, scope=module_scope)
+
+
+@pytest.mark.parametrize("fixture_name", ["default_run", "module_run", "dynamic_run"])
+@pytest.mark.parametrize("_case", [1, 2])
+def test_pipeline_fixture_scope(
+    fixture_name: str, _case: int, request: pytest.FixtureRequest
+) -> None:
+    default_calls_before = len(default_calls)
+    result = request.getfixturevalue(fixture_name)
+
+    assert result.catalog["raw"] == 3
+    if fixture_name == "default_run":
+        assert default_calls[default_calls_before:] == ["context", "read"]
+    elif fixture_name == "module_run":
+        assert module_calls == ["context", "read"]
+    else:
+        assert dynamic_calls == ["context", "read"]
 
 
 def test_to_testable_directly() -> None:
